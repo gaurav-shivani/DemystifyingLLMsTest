@@ -48,7 +48,7 @@ class Sampler:
         # 4. Temperature
         if self.temperature != 1.0:
             scaled = apply_temperature(logits, temperature=self.temperature)
-            probs = F.softmax(scaled, dim=-1)
+            probs = scaled
         else:
             probs = F.softmax(logits, dim=-1)
 

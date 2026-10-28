@@ -51,11 +51,23 @@ class ServingPipeline:
         if self.tokenizer is None or not hasattr(self.tokenizer, "encode") or not hasattr(self.tokenizer, "decode"):
             raise RuntimeError("A tokenizer with encode() and decode() is required")
 
-        from inference.engine.inference_engine import InferenceEngine
-        engine = InferenceEngine(
-            model=self.model,
-            model_config=self.config,
-            inference_config=self.inference_config,
-            device=self.device,
-        )
-        return engine.generate(text, tokenizer=self.tokenizer, max_new_tokens=max_new_tokens)
+        token_ids = self.tokenizer.encode(text)
+        input_ids = torch.as_tensor(token_ids, dtype=torch.long, device=self.device).unsqueeze(0)
+        self.model.to(self.device) if hasattr(self.model, "to") else None
+        if hasattr(self.model, "eval"):
+            self.model.eval()
+
+        with torch.no_grad():
+            output = self.model(input_ids)
+            if max_new_tokens is not None and max_new_tokens > 0:
+                generated = input_ids
+                for _ in range(max_new_tokens):
+                    logits = output[0] if isinstance(output, tuple) else output
+                    next_token = logits[:, -1, :].argmax(dim=-1, keepdim=True)
+                    generated = torch.cat((generated, next_token), dim=-1)
+                    output = self.model(generated)
+                output_ids = generated[0].tolist()
+            else:
+                logits = output[0] if isinstance(output, tuple) else output
+                output_ids = logits.argmax(dim=-1)[0].tolist()
+        return self.tokenizer.decode(output_ids)

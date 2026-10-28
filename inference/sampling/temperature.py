@@ -9,4 +9,4 @@ def apply_temperature(logits: torch.Tensor, temperature: float = 1.0) -> torch.T
     """
     if temperature <= 0:
         raise ValueError("temperature must be greater than zero")
-    return logits / temperature
+    return F.softmax(logits / temperature, dim=-1)

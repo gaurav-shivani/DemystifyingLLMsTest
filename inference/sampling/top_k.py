@@ -13,5 +13,5 @@ def apply_top_k(logits: torch.Tensor, k: int) -> torch.Tensor:
     # Keep only the highest-scoring k logits.
     threshold = val[..., -1, None]
     filtered_logits = logits.clone()
-    filtered_logits[filtered_logits > threshold] = float("-inf")
+    filtered_logits[filtered_logits < threshold] = float("-inf")
     return filtered_logits
