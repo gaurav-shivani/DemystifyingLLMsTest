@@ -97,6 +97,11 @@ class InferenceEngine:
         tokens = list(prompt_tokens)
         if not tokens:
             raise ValueError("prompt_tokens must contain at least one token")
+        unk_id = 1 if self.model_config.vocab_size > 1 else 0
+        tokens = [
+            token_id if 0 <= token_id < self.model_config.vocab_size else unk_id
+            for token_id in tokens
+        ]
 
         # Autoregressive generation loop
         with torch.no_grad():

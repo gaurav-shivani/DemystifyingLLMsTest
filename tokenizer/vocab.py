@@ -47,23 +47,15 @@ class Vocabulary:
     def token_to_id(self, token: str) -> int:
         if token in self._token_to_id:
             return self._token_to_id[token]
-        if token in Vocabulary._shared_vocab:
-            idx = Vocabulary._shared_vocab[token]
-            if idx not in self._id_to_token:
-                self._token_to_id[token] = idx
-                self._id_to_token[idx] = token
-                return idx
         return self.add_token(token)
 
     def id_to_token(self, idx: int) -> str:
         if idx in self._id_to_token:
             return self._id_to_token[idx]
-        if idx in Vocabulary._shared_id_to_token:
-            return Vocabulary._shared_id_to_token[idx]
         return f"<token_{idx}>"
 
     def __len__(self) -> int:
         return len(self._token_to_id)
 
     def __contains__(self, token: str) -> bool:
-        return token in self._token_to_id or token in Vocabulary._shared_vocab
+        return token in self._token_to_id
