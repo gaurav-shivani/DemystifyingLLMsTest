@@ -31,7 +31,7 @@ class Vocabulary:
             idx = self._next_available_id()
         existing = self._id_to_token.get(idx)
         if existing is not None and existing != token:
-            raise ValueError(f"Token ID {idx} is already assigned to {existing!r}")
+            idx = self._next_available_id()
         self._token_to_id[token] = idx
         self._id_to_token[idx] = token
         Vocabulary._shared_vocab[token] = idx

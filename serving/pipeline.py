@@ -52,6 +52,16 @@ class ServingPipeline:
             raise RuntimeError("A tokenizer with encode() and decode() is required")
 
         token_ids = self.tokenizer.encode(text)
+        vocab_size = getattr(self.config, "vocab_size", None)
+        if vocab_size is not None:
+            vocab = getattr(self.tokenizer, "vocab", None)
+            unknown_id = getattr(vocab, "unk_token_id", 1)
+            if not 0 <= unknown_id < vocab_size:
+                unknown_id = 0
+            token_ids = [
+                token_id if 0 <= token_id < vocab_size else unknown_id
+                for token_id in token_ids
+            ]
         input_ids = torch.as_tensor(token_ids, dtype=torch.long, device=self.device).unsqueeze(0)
         self.model.to(self.device) if hasattr(self.model, "to") else None
         if hasattr(self.model, "eval"):
